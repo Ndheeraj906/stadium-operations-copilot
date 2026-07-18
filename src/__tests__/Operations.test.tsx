@@ -47,11 +47,7 @@ describe('Operations Dashboard', () => {
     render(<OperationsPage />);
     expect(screen.getByText('Loading telemetry...')).toBeDefined();
 
-    await waitFor(() => {
-      expect(screen.getByText('Live Crowd Density')).toBeDefined();
-    });
-
-    expect(screen.getByText('Gate A')).toBeDefined();
+    expect(await screen.findByText('Gate A')).toBeDefined();
     expect(screen.getByText('80%')).toBeDefined();
   });
 

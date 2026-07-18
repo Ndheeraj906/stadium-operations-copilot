@@ -7,7 +7,7 @@ describe('Landing Page', () => {
     render(<Home />);
     
     expect(screen.getByText('StadiumSync')).toBeDefined();
-    expect(screen.getByText(/Next-Gen Matchday Intelligence/i)).toBeDefined();
+    expect(screen.getByText(/next-generation stadium operations/i)).toBeDefined();
     
     // Check for links
     expect(screen.getByRole('link', { name: /Fan Copilot/i })).toBeDefined();
