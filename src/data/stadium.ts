@@ -1,4 +1,5 @@
 export const STADIUM_DATA = {
+  name: "Estadio Azteca",
   gates: [
     { id: "gate-a", name: "Gate A", accessibility: ["wheelchair", "step-free"], description: "Main north entrance." },
     { id: "gate-b", name: "Gate B", accessibility: [], description: "East entrance with stairs." },
