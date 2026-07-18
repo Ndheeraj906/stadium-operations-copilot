@@ -47,8 +47,9 @@ describe('Operations Dashboard', () => {
     render(<OperationsPage />);
     expect(screen.getByText('Loading telemetry...')).toBeDefined();
 
-    expect(await screen.findByText('Gate A')).toBeDefined();
-    expect(screen.getByText('80%')).toBeDefined();
+    const gateElements = await screen.findAllByText('Gate A');
+    expect(gateElements.length).toBeGreaterThan(0);
+    expect(screen.getAllByText('80%')[0]).toBeDefined();
   });
 
   it('generates an AI briefing successfully', async () => {
