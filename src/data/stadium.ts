@@ -1,42 +1,65 @@
 export const STADIUM_DATA = {
-  name: "Estadio Azteca (StadiumSync Demo)",
-  location: "Mexico City",
-  capacity: 83264,
   gates: [
-    { id: "G1", access: "General", accessible: true, nearestTransport: "Metro Line 2" },
-    { id: "G2", access: "VIP", accessible: true, nearestTransport: "Valet Parking" },
-    { id: "G3", access: "General", accessible: false, nearestTransport: "Bus Stop 4" },
-    { id: "G4", access: "Staff", accessible: true, nearestTransport: "Staff Shuttle" }
+    { id: "gate-a", name: "Gate A", accessibility: ["wheelchair", "step-free"], description: "Main north entrance." },
+    { id: "gate-b", name: "Gate B", accessibility: [], description: "East entrance with stairs." },
+    { id: "gate-6", name: "Gate 6", accessibility: ["wheelchair", "step-free", "elevators"], description: "Fully accessible entrance with sensory room nearby." },
+  ],
+  transport: [
+    { type: "metro", details: "Line 2 connects directly to the stadium. Fully accessible." },
+    { type: "bus", details: "Fan shuttle stops at North Plaza." },
+    { type: "rideshare", details: "Designated drop-off at South lot." }
   ],
   facilities: [
-    { name: "First Aid", location: "Level 1, Section 104" },
-    { name: "Sensory Room", location: "Level 2, VIP Concourse" },
-    { name: "Accessible Toilets", location: "All Levels near elevators" },
-    { name: "Food Court", location: "Level 1, Concourse A & Level 3" }
-  ],
-  transportation: {
-    metro: "Take Line 2 to Estadio Azteca station. 5 minute walk to Gate 1.",
-    bus: "Bus routes 14 and 22 drop off near Gate 3.",
-    rideshare: "Designated pickup/dropoff zone is near Gate 4."
-  }
+    { type: "sensory-room", location: "Near Gate 6", description: "Quiet space for fans with sensory needs." },
+    { type: "elevators", location: "All major gates", description: "Provides step-free access to all concourses." }
+  ]
 };
 
-// Simulated dynamic telemetry for the operations dashboard
-export const getLiveTelemetry = () => {
+export function getLiveTelemetry() {
   return {
-    crowdDensity: [
-      { zone: "Gate 1", status: "Critical", occupancyPercent: 95 },
-      { zone: "Gate 3", status: "Busy", occupancyPercent: 70 },
-      { zone: "Food Court L1", status: "Comfortable", occupancyPercent: 40 },
+    zones: [
+      {
+        id: 'south-concourse',
+        name: 'South Concourse',
+        capacity: 6000,
+        occupancy: 5300,
+        densityPct: 88,
+        status: 'critical',
+      },
+      {
+        id: 'north-stand',
+        name: 'North Stand',
+        capacity: 18000,
+        occupancy: 9900,
+        densityPct: 55,
+        status: 'comfortable',
+      },
+      {
+        id: 'east-plaza',
+        name: 'East Plaza',
+        capacity: 10000,
+        occupancy: 4500,
+        densityPct: 45,
+        status: 'comfortable',
+      }
     ],
     incidents: [
-      { id: "INC-01", type: "Medical", location: "Section 108", status: "Investigating" },
-      { id: "INC-02", type: "Maintenance", location: "Elevator B", status: "Open" }
+      {
+        id: 'inc-001',
+        zoneId: 'south-concourse',
+        category: 'crowd',
+        severity: 'high',
+        summary: 'Congestion at the South Concourse food court.',
+        status: 'open',
+        reportedAt: new Date().toISOString(),
+      },
     ],
     sustainability: {
-      wasteDivertedPercent: 65,
-      energyUsageKwH: 4500,
-      waterRefills: 12500
-    }
+      wasteDivertedPct: 68,
+      energyKwh: 41200,
+      waterRefillCount: 5230,
+      co2SavedKg: 1840,
+    },
+    generatedAt: new Date().toISOString(),
   };
-};
+}

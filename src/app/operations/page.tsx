@@ -3,54 +3,62 @@ import React, { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Activity, AlertTriangle, Leaf, Zap } from "lucide-react";
 import Link from "next/link";
 
-interface CrowdDensity {
-  zone: string;
-  status: "Critical" | "Busy" | "Low" | "Comfortable";
-  occupancyPercent: number;
+interface Zone {
+  id: string;
+  name: string;
+  capacity: number;
+  occupancy: number;
+  densityPct: number;
+  status: "critical" | "busy" | "comfortable" | "low";
 }
 
 interface Incident {
   id: string;
-  type: string;
-  location: string;
+  zoneId: string;
+  category: string;
+  severity: "high" | "medium" | "low";
+  summary: string;
   status: string;
+  reportedAt: string;
 }
 
 interface Sustainability {
-  wasteDivertedPercent: number;
-  energyUsageKwH: number;
-  waterRefills: number;
+  wasteDivertedPct: number;
+  energyKwh: number;
+  waterRefillCount: number;
+  co2SavedKg: number;
 }
 
 interface TelemetryData {
-  crowdDensity: CrowdDensity[];
+  zones: Zone[];
   incidents: Incident[];
   sustainability: Sustainability;
+  generatedAt?: string;
 }
 
-const DensityCard = React.memo(({ density }: { density: CrowdDensity[] }) => (
+const DensityCard = React.memo(({ zones }: { zones: Zone[] }) => (
   <section className="col-span-1 bg-gray-900 border border-gray-800 rounded-2xl p-6" aria-labelledby="density-heading">
     <h2 id="density-heading" className="text-lg font-semibold mb-4 text-gray-300">Live Crowd Density</h2>
     <div className="space-y-4">
-      {density.map((zone, i) => (
-        <div key={i}>
+      {zones.map((zone) => (
+        <div key={zone.id}>
           <div className="flex justify-between text-sm mb-1">
-            <span>{zone.zone}</span>
-            <span className={zone.status === "Critical" ? "text-red-400" : zone.status === "Busy" ? "text-yellow-400" : "text-emerald-400"}>
-              {zone.occupancyPercent}%
+            <h3 className="font-bold text-gray-200">{zone.name}</h3>
+            <span className={zone.status === "critical" ? "text-red-400" : zone.status === "busy" ? "text-yellow-400" : "text-emerald-400"}>
+              {zone.densityPct}%
             </span>
           </div>
           <div 
             className="w-full bg-gray-800 rounded-full h-2"
             role="meter" 
-            aria-valuenow={zone.occupancyPercent} 
+            aria-valuenow={zone.densityPct} 
             aria-valuemin={0} 
             aria-valuemax={100}
-            aria-label={`${zone.zone} density`}
+            aria-label={`${zone.name} density`}
           >
             <div 
-              className={`h-2 rounded-full ${zone.status === "Critical" ? "bg-red-500" : zone.status === "Busy" ? "bg-yellow-500" : "bg-emerald-500"}`}
-              style={{ width: `${zone.occupancyPercent}%` }}
+              className={`h-2 rounded-full ${zone.status === "critical" ? "bg-red-500" : zone.status === "busy" ? "bg-yellow-500" : "bg-emerald-500"}`}
+              style={{ width: `${zone.densityPct}%` }}
             />
           </div>
         </div>
@@ -66,13 +74,13 @@ const IncidentsCard = React.memo(({ incidents }: { incidents: Incident[] }) => (
       <AlertTriangle className="w-5 h-5 text-yellow-500" /> Active Incidents
     </h2>
     <div className="space-y-3">
-      {incidents.map((inc, i) => (
-        <div key={i} className="p-3 bg-gray-800 rounded-xl border border-gray-700 text-sm">
-          <div className="font-medium text-white">{inc.id} - {inc.type}</div>
-          <div className="text-gray-400 flex justify-between mt-1">
-            <span>{inc.location}</span>
-            <span className="text-yellow-400">{inc.status}</span>
+      {incidents.map((inc) => (
+        <div key={inc.id} className="p-3 bg-gray-800 rounded-xl border border-gray-700 text-sm">
+          <div className="font-medium text-white flex justify-between">
+            <span className="capitalize">{inc.category} Issue</span>
+            <span className={inc.severity === 'high' ? "text-red-400" : "text-yellow-400"}>{inc.status}</span>
           </div>
+          <p className="text-gray-400 mt-1">{inc.summary}</p>
         </div>
       ))}
     </div>
@@ -88,15 +96,15 @@ const SustainabilityCard = React.memo(({ data }: { data: Sustainability }) => (
     <div className="space-y-4">
       <div>
         <div className="text-sm text-gray-400">Waste diverted from landfill</div>
-        <div className="text-2xl font-bold text-white">{data.wasteDivertedPercent}%</div>
+        <div className="text-2xl font-bold text-white">{data.wasteDivertedPct}%</div>
       </div>
       <div>
         <div className="text-sm text-gray-400">Energy Usage</div>
-        <div className="text-2xl font-bold text-white">{data.energyUsageKwH.toLocaleString()} kWh</div>
+        <div className="text-2xl font-bold text-white">{data.energyKwh.toLocaleString()} kWh</div>
       </div>
       <div>
         <div className="text-sm text-gray-400">Water Refills</div>
-        <div className="text-2xl font-bold text-white">{data.waterRefills.toLocaleString()}</div>
+        <div className="text-2xl font-bold text-white">{data.waterRefillCount.toLocaleString()}</div>
       </div>
     </div>
   </div>
@@ -111,7 +119,8 @@ export default function OperationsPage() {
   useEffect(() => {
     fetch("/api/operations/snapshot")
       .then(res => res.json())
-      .then((data: TelemetryData) => setTelemetry(data));
+      .then((data: TelemetryData) => setTelemetry(data))
+      .catch(console.error);
   }, []);
 
   const generateBriefing = useCallback(async () => {
@@ -150,9 +159,9 @@ export default function OperationsPage() {
       </header>
 
       <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <DensityCard density={telemetry.crowdDensity} />
-        <IncidentsCard incidents={telemetry.incidents} />
-        <SustainabilityCard data={telemetry.sustainability} />
+        {telemetry.zones && <DensityCard zones={telemetry.zones} />}
+        {telemetry.incidents && <IncidentsCard incidents={telemetry.incidents} />}
+        {telemetry.sustainability && <SustainabilityCard data={telemetry.sustainability} />}
       </div>
 
       {briefing && (

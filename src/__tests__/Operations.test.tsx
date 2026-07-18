@@ -1,42 +1,41 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 import OperationsPage from '../app/operations/page';
-
-// Mock matchMedia
-beforeAll(() => {
-  Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    value: vi.fn().mockImplementation(query => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    })),
-  });
-});
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 const mockTelemetry = {
-  crowdDensity: [
-    { zone: "Gate A", occupancyPercent: 80, status: "Busy" }
+  zones: [
+    {
+      id: 'south-concourse',
+      name: 'South Concourse',
+      capacity: 6000,
+      occupancy: 5300,
+      densityPct: 88,
+      status: 'critical',
+    },
   ],
   incidents: [
-    { id: "INC-1", type: "Medical", location: "Gate A", status: "Active" }
+    {
+      id: 'inc-001',
+      zoneId: 'south-concourse',
+      category: 'crowd',
+      severity: 'high',
+      summary: 'Congestion at the South Concourse food court.',
+      status: 'open',
+      reportedAt: '2026-07-06T17:05:00.000Z',
+    },
   ],
   sustainability: {
-    wasteDivertedPercent: 60,
-    energyUsageKwH: 1000,
-    waterRefills: 500
-  }
+    wasteDivertedPct: 68,
+    energyKwh: 41200,
+    waterRefillCount: 5230,
+    co2SavedKg: 1840,
+  },
+  generatedAt: '2026-07-06T17:10:00.000Z',
 };
 
-describe('Operations Dashboard', () => {
+describe('OperationsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    global.fetch = vi.fn();
   });
 
   it('renders loading state initially, then telemetry', async () => {
@@ -45,44 +44,49 @@ describe('Operations Dashboard', () => {
     });
 
     render(<OperationsPage />);
-    expect(screen.getByText('Loading telemetry...')).toBeDefined();
+    expect(screen.getByText(/Loading telemetry/i)).toBeDefined();
 
-    const gateElements = await screen.findAllByText('Gate A');
-    expect(gateElements.length).toBeGreaterThan(0);
-    expect(screen.getAllByText('80%')[0]).toBeDefined();
+    await waitFor(() => {
+      expect(screen.getByText('South Concourse')).toBeDefined();
+    });
+
+    expect(screen.getByText('Congestion at the South Concourse food court.')).toBeDefined();
+    expect(screen.getByText(/68%/)).toBeDefined();
   });
 
   it('generates an AI briefing successfully', async () => {
     (global.fetch as unknown as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce({ json: async () => mockTelemetry }) // init
-      .mockResolvedValueOnce({ json: async () => ({ briefing: "Everything is fine." }) }); // POST
+      .mockResolvedValueOnce({ json: async () => mockTelemetry }) 
+      .mockResolvedValueOnce({ json: async () => ({ briefing: "Redirect fans to North Stand." }) }); 
 
     render(<OperationsPage />);
-    await waitFor(() => screen.getByText('Live Crowd Density'));
+    await waitFor(() => {
+      expect(screen.getByText('South Concourse')).toBeDefined();
+    });
 
-    const button = screen.getByRole('button', { name: /Generate AI Briefing/i });
-    fireEvent.click(button);
-
-    expect(screen.getByText('Analyzing...')).toBeDefined();
+    const btn = screen.getByRole('button', { name: /Generate AI Briefing/i });
+    fireEvent.click(btn);
 
     await waitFor(() => {
-      expect(screen.getByText('Everything is fine.')).toBeDefined();
+      expect(screen.getByText('Redirect fans to North Stand.')).toBeDefined();
     });
   });
 
-  it('handles API errors gracefully', async () => {
+  it('displays an error if AI briefing fails', async () => {
     (global.fetch as unknown as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce({ json: async () => mockTelemetry })
-      .mockRejectedValueOnce(new Error("Network error"));
+      .mockResolvedValueOnce({ json: async () => mockTelemetry }) 
+      .mockRejectedValueOnce(new Error("API Error"));
 
     render(<OperationsPage />);
-    await waitFor(() => screen.getByText('Live Crowd Density'));
+    await waitFor(() => {
+      expect(screen.getByText('South Concourse')).toBeDefined();
+    });
 
-    const button = screen.getByRole('button', { name: /Generate AI Briefing/i });
-    fireEvent.click(button);
+    const btn = screen.getByRole('button', { name: /Generate AI Briefing/i });
+    fireEvent.click(btn);
 
     await waitFor(() => {
-      expect(screen.getByText('Error communicating with AI.')).toBeDefined();
+      expect(screen.getByText(/Error communicating/i)).toBeDefined();
     });
   });
 });
