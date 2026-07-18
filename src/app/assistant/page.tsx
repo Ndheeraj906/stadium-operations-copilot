@@ -6,6 +6,7 @@ import Link from "next/link";
 interface Message {
   role: "user" | "ai";
   text: string;
+  language?: string;
 }
 
 const MessageBubble = React.memo(({ msg }: { msg: Message }) => (
@@ -13,7 +14,12 @@ const MessageBubble = React.memo(({ msg }: { msg: Message }) => (
     <div className={`p-2 rounded-full flex-shrink-0 ${msg.role === "user" ? "bg-blue-500" : "bg-gray-800"}`}>
       {msg.role === "user" ? <User className="w-5 h-5 text-white" /> : <Bot className="w-5 h-5 text-blue-400" />}
     </div>
-    <div className={`px-5 py-3 rounded-2xl max-w-[80%] ${msg.role === "user" ? "bg-blue-600 text-white rounded-tr-none" : "bg-gray-800 text-gray-100 rounded-tl-none"}`} role="article">
+    <div 
+      className={`px-5 py-3 rounded-2xl max-w-[80%] ${msg.role === "user" ? "bg-blue-600 text-white rounded-tr-none" : "bg-gray-800 text-gray-100 rounded-tl-none"}`} 
+      role="article"
+      dir={msg.role === "ai" && msg.language === "ar" ? "rtl" : "auto"}
+      lang={msg.role === "ai" && msg.language === "ar" ? "ar" : undefined}
+    >
       <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>
     </div>
   </div>
@@ -35,7 +41,7 @@ export default function AssistantPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/assistant", {
+      const res = await fetch("/api/assistant/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage, language })
@@ -44,7 +50,8 @@ export default function AssistantPage() {
       
       setMessages(prev => [...prev, { 
         role: "ai", 
-        text: data.reply || data.error || "An error occurred." 
+        text: data.reply || data.error || data.answer || "An error occurred.",
+        language: language === "Arabic" || language === "ar" ? "ar" : "en"
       }]);
     } catch {
       setMessages(prev => [...prev, { role: "ai", text: "Failed to connect to the assistant." }]);
@@ -70,14 +77,15 @@ export default function AssistantPage() {
           </h1>
         </div>
         <select 
+          aria-label="Answer language"
           value={language} 
           onChange={(e) => setLanguage(e.target.value)}
           className="bg-gray-800 text-white border border-gray-700 rounded-lg px-3 py-1.5 text-sm outline-none"
         >
-          <option>English</option>
-          <option>Spanish</option>
-          <option>French</option>
-          <option>Arabic</option>
+          <option value="en">English</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="ar">Arabic</option>
         </select>
       </header>
 
@@ -114,12 +122,12 @@ export default function AssistantPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about gates, accessibility, transport..."
-            aria-label="Ask about gates, accessibility, transport"
-            className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:blue-500 transition-colors"
+            aria-label="Your question"
+            className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
           />
           <button 
             type="submit" 
-            aria-label="Send message"
+            aria-label="Ask StadiumIQ"
             disabled={loading || !input.trim()}
             className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 rounded-xl font-medium transition-colors flex items-center justify-center"
           >

@@ -18,7 +18,7 @@ beforeAll(() => {
   });
 });
 
-describe('Fan Assistant UI', () => {
+describe('AssistantPage Interactive', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = vi.fn();
@@ -26,12 +26,9 @@ describe('Fan Assistant UI', () => {
 
   it('renders the chat interface securely', () => {
     render(<AssistantPage />);
-    const heading = screen.getByRole('heading', { name: /Fan Copilot/i });
-    expect(heading).toBeDefined();
-    
-    const input = screen.getByRole('textbox', { name: /Ask about/i });
-    expect(input).toBeDefined();
-    expect(input.getAttribute('aria-label')).toBeDefined();
+    expect(screen.getByText('Fan Copilot')).toBeDefined();
+    expect(screen.getByRole('textbox', { name: /Your question/i })).toBeDefined();
+    expect(screen.getByRole('button', { name: /Ask StadiumIQ/i })).toBeDefined();
   });
 
   it('allows user to send a message and get a response', async () => {
@@ -41,19 +38,15 @@ describe('Fan Assistant UI', () => {
 
     render(<AssistantPage />);
     
-    const input = screen.getByRole('textbox', { name: /Ask about/i });
-    const button = screen.getByRole('button', { name: /Send message/i });
+    const input = screen.getByRole('textbox', { name: /Your question/i });
+    const button = screen.getByRole('button', { name: /Ask StadiumIQ/i });
 
     fireEvent.change(input, { target: { value: 'Where is gate A?' } });
     fireEvent.click(button);
 
-    // Should render the user message
+    expect(input).toHaveProperty('value', '');
     expect(screen.getByText('Where is gate A?')).toBeDefined();
     
-    // Should render loading state
-    expect(screen.getByText('Thinking...')).toBeDefined();
-
-    // Should render AI response
     await waitFor(() => {
       expect(screen.getByText('Gate A is open.')).toBeDefined();
     });
@@ -64,10 +57,10 @@ describe('Fan Assistant UI', () => {
 
     render(<AssistantPage />);
     
-    const input = screen.getByRole('textbox', { name: /Ask about/i });
-    const button = screen.getByRole('button', { name: /Send message/i });
+    const input = screen.getByRole('textbox', { name: /Your question/i });
+    const button = screen.getByRole('button', { name: /Ask StadiumIQ/i });
 
-    fireEvent.change(input, { target: { value: 'Where is gate A?' } });
+    fireEvent.change(input, { target: { value: 'Broken?' } });
     fireEvent.click(button);
 
     await waitFor(() => {

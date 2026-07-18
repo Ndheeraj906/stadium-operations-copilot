@@ -87,7 +87,7 @@ const SustainabilityCard = React.memo(({ data }: { data: Sustainability }) => (
     </h2>
     <div className="space-y-4">
       <div>
-        <div className="text-sm text-gray-400">Waste Diverted</div>
+        <div className="text-sm text-gray-400">Waste diverted from landfill</div>
         <div className="text-2xl font-bold text-white">{data.wasteDivertedPercent}%</div>
       </div>
       <div>
@@ -109,7 +109,7 @@ export default function OperationsPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("/api/operations")
+    fetch("/api/operations/snapshot")
       .then(res => res.json())
       .then((data: TelemetryData) => setTelemetry(data));
   }, []);
@@ -117,7 +117,7 @@ export default function OperationsPage() {
   const generateBriefing = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/operations", { method: "POST" });
+      const res = await fetch("/api/operations/briefing", { method: "POST" });
       const data = await res.json();
       setBriefing(data.briefing || data.error || "Failed to generate briefing.");
     } catch {

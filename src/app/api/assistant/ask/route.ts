@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
-import { STADIUM_DATA } from "@/data/stadium";
+import { STADIUM_DATA } from "../../../../data/stadium";
 
 import { z } from "zod";
 

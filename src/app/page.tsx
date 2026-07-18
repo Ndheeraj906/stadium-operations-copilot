@@ -18,7 +18,7 @@ export default function Home() {
             <div className="p-4 bg-blue-500/10 rounded-full group-hover:bg-blue-500/20 transition-colors">
               <MessageSquare className="w-10 h-10 text-blue-400" />
             </div>
-            <h2 className="text-2xl font-semibold">Fan Copilot</h2>
+            <h2 className="text-2xl font-semibold">Fan Assistant</h2>
             <p className="text-gray-400">Multilingual matchday assistant for navigation and accessibility.</p>
           </Link>
 
@@ -26,7 +26,7 @@ export default function Home() {
             <div className="p-4 bg-emerald-500/10 rounded-full group-hover:bg-emerald-500/20 transition-colors">
               <LayoutDashboard className="w-10 h-10 text-emerald-400" />
             </div>
-            <h2 className="text-2xl font-semibold">Command Center</h2>
+            <h2 className="text-2xl font-semibold">Operations</h2>
             <p className="text-gray-400">Live crowd telemetry, incident tracking, and AI briefings.</p>
           </Link>
         </div>
