@@ -71,7 +71,7 @@ describe('Fan Assistant UI', () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByText(/Sorry, I encountered an error./i)).toBeDefined();
+      expect(screen.getByText(/Failed to connect/i)).toBeDefined();
     });
   });
 });
