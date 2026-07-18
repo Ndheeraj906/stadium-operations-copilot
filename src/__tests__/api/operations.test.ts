@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { GET, POST } from '../app/api/operations/route';
-import { NextResponse } from 'next/server';
+import { GET, POST } from '../../app/api/operations/route';
 
 // Mock genai
 vi.mock('@google/genai', () => ({

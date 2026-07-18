@@ -38,8 +38,10 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ reply: response.text });
-  } catch (error: any) {
-    console.error("AI Error:", error);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error("AI Error:", err.message);
+    }
+    return NextResponse.json({ error: "Failed to process message" }, { status: 500 });
   }
 }

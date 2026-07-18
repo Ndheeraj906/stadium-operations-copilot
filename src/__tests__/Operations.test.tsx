@@ -40,7 +40,7 @@ describe('Operations Dashboard', () => {
   });
 
   it('renders loading state initially, then telemetry', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       json: async () => mockTelemetry
     });
 
@@ -53,7 +53,7 @@ describe('Operations Dashboard', () => {
   });
 
   it('generates an AI briefing successfully', async () => {
-    (global.fetch as any)
+    (global.fetch as unknown as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ json: async () => mockTelemetry }) // init
       .mockResolvedValueOnce({ json: async () => ({ briefing: "Everything is fine." }) }); // POST
 
@@ -71,7 +71,7 @@ describe('Operations Dashboard', () => {
   });
 
   it('handles API errors gracefully', async () => {
-    (global.fetch as any)
+    (global.fetch as unknown as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ json: async () => mockTelemetry })
       .mockRejectedValueOnce(new Error("Network error"));
 

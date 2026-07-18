@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { POST } from '../app/api/assistant/route';
+import { POST } from '../../app/api/assistant/route';
 
 vi.mock('@google/genai', () => ({
   GoogleGenAI: vi.fn().mockImplementation(() => ({

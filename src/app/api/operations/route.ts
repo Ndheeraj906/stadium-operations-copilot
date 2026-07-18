@@ -2,12 +2,21 @@ import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { getLiveTelemetry } from "@/data/stadium";
 
-export async function GET(req: Request) {
-  // Returns the live telemetry data for the dashboard
-  return NextResponse.json(getLiveTelemetry());
+export async function GET() {
+  try {
+    const telemetry = getLiveTelemetry();
+    return NextResponse.json(telemetry, {
+      headers: {
+        'Cache-Control': 's-maxage=10, stale-while-revalidate=59',
+      },
+    });
+  } catch (error) {
+    console.error("Telemetry Error:", error);
+    return NextResponse.json({ error: "Failed to fetch telemetry" }, { status: 500 });
+  }
 }
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: "Missing GEMINI_API_KEY" }, { status: 500 });
@@ -34,8 +43,10 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ briefing: response.text });
-  } catch (error: any) {
-    console.error("AI Error:", error);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error("AI Generation Error:", err.message);
+    }
     return NextResponse.json({ error: "Failed to generate briefing" }, { status: 500 });
   }
 }

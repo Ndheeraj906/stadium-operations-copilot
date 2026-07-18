@@ -35,7 +35,7 @@ describe('Fan Assistant UI', () => {
   });
 
   it('allows user to send a message and get a response', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       json: async () => ({ reply: "Gate A is open." })
     });
 
@@ -60,7 +60,7 @@ describe('Fan Assistant UI', () => {
   });
 
   it('handles API errors gracefully', async () => {
-    (global.fetch as any).mockRejectedValueOnce(new Error("Network Error"));
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("Network Error"));
 
     render(<AssistantPage />);
     
